@@ -899,7 +899,9 @@
       resumeText: '',
       resumeSkills: [],
       selectedJobId: null,
-      lastResults: []
+      lastResults: [],
+      currentSearchId: 0,
+      abortController: null
     };
 
     const skillVocabulary = [
@@ -1178,9 +1180,10 @@
       }));
     }
 
-    async function fetchExternalJobs() {
+    async function fetchExternalJobs(signal) {
       const response = await fetch('/api/jobs/search', {
         method: 'POST',
+        signal,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query: elements.queryInput.value.trim(),
@@ -1325,19 +1328,27 @@
     }
 
     async function runSearch() {
+      const searchId = state.currentSearchId + 1;
+      state.currentSearchId = searchId;
+      if (state.abortController) {
+        state.abortController.abort();
+      }
+      state.abortController = new AbortController();
       const started = performance.now();
       setStatus('Searching');
       try {
-        const jobs = await fetchExternalJobs();
+        const jobs = await fetchExternalJobs(state.abortController.signal);
+        if (searchId !== state.currentSearchId) return;
         const results = applyFilters(jobs);
         const latency = performance.now() - started;
         renderJobs(results, latency);
         setStatus('RapidAPI JSearch results loaded');
       } catch (error) {
+        if (error.name === 'AbortError' || searchId !== state.currentSearchId) return;
         const latency = performance.now() - started;
-        renderJobs([], latency);
-        elements.resultSubhead.textContent = 'RapidAPI setup needed';
-        setStatus(error.message || 'RapidAPI search failed');
+        elements.latencyMetric.textContent = latency.toFixed(1);
+        elements.resultSubhead.textContent = state.lastResults.length ? `${state.lastResults.length} previous roles still shown` : 'RapidAPI search failed';
+        setStatus(`${error.message || 'RapidAPI search failed'}; keeping previous jobs`);
         showToast(error.message || 'RapidAPI search failed');
       }
     }
