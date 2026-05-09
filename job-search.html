@@ -1,0 +1,1414 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Job Search Beats</title>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7f4;
+      --panel: #ffffff;
+      --panel-soft: #f0f5f3;
+      --ink: #17221f;
+      --muted: #64736e;
+      --line: #d9e2dd;
+      --teal: #0f766e;
+      --teal-dark: #115e59;
+      --blue: #2563eb;
+      --amber: #d97706;
+      --red: #b91c1c;
+      --shadow: 0 14px 38px rgba(23, 34, 31, 0.08);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 24px;
+      background: rgba(255, 255, 255, 0.92);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 230px;
+    }
+
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: var(--teal);
+      box-shadow: 0 10px 24px rgba(15, 118, 110, 0.22);
+      flex: 0 0 auto;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .brand span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .searchbar {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) minmax(120px, 180px) 48px;
+      gap: 10px;
+      max-width: 900px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field label,
+    .upload-title,
+    .panel-title {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .input-shell {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      padding: 0 12px;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .input-shell:focus-within {
+      border-color: rgba(15, 118, 110, 0.75);
+      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+    }
+
+    .input-shell svg {
+      width: 18px;
+      height: 18px;
+      color: var(--muted);
+      flex: 0 0 auto;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #8a9994;
+    }
+
+    .icon-button,
+    .primary-button,
+    .secondary-button,
+    .ghost-button {
+      min-height: 44px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .icon-button {
+      width: 48px;
+      color: white;
+      background: var(--teal);
+    }
+
+    .primary-button {
+      padding: 0 16px;
+      color: white;
+      background: var(--teal);
+    }
+
+    .secondary-button {
+      padding: 0 14px;
+      color: var(--teal-dark);
+      background: #e0f2ee;
+    }
+
+    .ghost-button {
+      padding: 0 12px;
+      color: var(--ink);
+      background: transparent;
+      border: 1px solid var(--line);
+    }
+
+    .icon-button:hover,
+    .primary-button:hover {
+      background: var(--teal-dark);
+    }
+
+    .secondary-button:hover {
+      background: #c9e9e3;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(260px, 320px) minmax(0, 1fr) minmax(260px, 310px);
+      gap: 18px;
+      padding: 18px 24px 24px;
+    }
+
+    .panel,
+    .results-panel,
+    .detail-panel {
+      min-width: 0;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel,
+    .detail-panel {
+      align-self: start;
+      padding: 16px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .panel-section {
+      display: grid;
+      gap: 12px;
+    }
+
+    .upload-zone {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+      border: 1px dashed #abc2ba;
+      border-radius: 8px;
+      background: var(--panel-soft);
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .file-label {
+      min-height: 44px;
+      border-radius: 8px;
+      background: white;
+      border: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .file-meta {
+      min-height: 18px;
+      color: var(--muted);
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .skill-list,
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .skill-chip,
+    .tag-chip {
+      max-width: 100%;
+      min-height: 30px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: #edf7f4;
+      color: var(--teal-dark);
+      border: 1px solid #cde8e2;
+      font-size: 12px;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .tag-chip.blue {
+      color: #1d4ed8;
+      background: #eaf0ff;
+      border-color: #c8d7ff;
+    }
+
+    .tag-chip.amber {
+      color: #92400e;
+      background: #fff4db;
+      border-color: #f8dc9d;
+    }
+
+    .tag-chip.red {
+      color: #991b1b;
+      background: #fee2e2;
+      border-color: #fecaca;
+    }
+
+    .split-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .range-row {
+      display: grid;
+      grid-template-columns: 1fr 60px;
+      gap: 10px;
+      align-items: center;
+    }
+
+    input[type="range"] {
+      accent-color: var(--teal);
+    }
+
+    .checkbox-row {
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--ink);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .checkbox-row input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--teal);
+    }
+
+    .api-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .status-line {
+      min-height: 20px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .results-panel {
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      min-height: calc(100vh - 114px);
+    }
+
+    .results-head {
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .results-head h2,
+    .detail-panel h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    .metrics {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .metric {
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 6px 10px;
+      background: #fbfcfb;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .metric strong {
+      color: var(--ink);
+    }
+
+    .sort-row {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) minmax(130px, 180px) minmax(130px, 180px);
+      gap: 10px;
+      background: #fbfcfb;
+    }
+
+    .results-list {
+      min-height: 0;
+      overflow: auto;
+      display: grid;
+      align-content: start;
+    }
+
+    .job-row {
+      min-width: 0;
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      background: white;
+      transition: background 0.16s ease;
+    }
+
+    .job-row:hover,
+    .job-row.active {
+      background: #f7fbfa;
+    }
+
+    .job-main {
+      min-width: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .job-title-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .job-title {
+      min-width: 0;
+    }
+
+    .job-title h3 {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.25;
+      letter-spacing: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .company {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .score-pill {
+      width: 72px;
+      min-height: 34px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      background: var(--teal);
+      font-size: 13px;
+      font-weight: 900;
+      flex: 0 0 auto;
+    }
+
+    .job-summary {
+      margin: 0;
+      color: #3f4f4a;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .job-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .meta-item {
+      min-height: 28px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #f0f3f2;
+      color: #4e5e59;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .meta-item svg,
+    .job-actions svg,
+    .detail-line svg,
+    .metric svg,
+    .file-label svg,
+    .panel-title-row svg {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
+    }
+
+    .job-actions {
+      display: flex;
+      align-items: start;
+      gap: 8px;
+    }
+
+    .job-actions a {
+      min-height: 40px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 12px;
+      color: var(--teal-dark);
+      background: #e0f2ee;
+      text-decoration: none;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .job-actions a:hover {
+      background: #c9e9e3;
+    }
+
+    .empty-state {
+      min-height: 360px;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .detail-panel {
+      position: sticky;
+      top: 90px;
+    }
+
+    .panel-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .detail-card {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfb;
+    }
+
+    .detail-line {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      color: #43524e;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .detail-line strong {
+      color: var(--ink);
+    }
+
+    .rank-list {
+      display: grid;
+      gap: 9px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .rank-list li {
+      display: grid;
+      gap: 4px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: white;
+    }
+
+    .rank-list strong {
+      font-size: 13px;
+    }
+
+    .rank-list span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .source-note {
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.42;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%) translateY(120%);
+      min-height: 44px;
+      max-width: min(620px, calc(100vw - 32px));
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: #17221f;
+      color: white;
+      box-shadow: 0 12px 34px rgba(23, 34, 31, 0.25);
+      transition: transform 0.2s ease;
+      z-index: 20;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 1180px) {
+      .workspace {
+        grid-template-columns: 300px minmax(0, 1fr);
+      }
+
+      .detail-panel {
+        grid-column: 1 / -1;
+        position: static;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .brand {
+        min-width: 0;
+      }
+
+      .searchbar,
+      .workspace,
+      .sort-row {
+        grid-template-columns: 1fr;
+      }
+
+      .workspace {
+        padding: 14px;
+      }
+
+      .results-panel {
+        min-height: 540px;
+      }
+
+      .job-row,
+      .job-title-row {
+        grid-template-columns: 1fr;
+      }
+
+      .job-row {
+        display: grid;
+      }
+
+      .job-actions {
+        align-items: stretch;
+      }
+
+      .job-actions a,
+      .ghost-button {
+        width: 100%;
+      }
+
+      .metrics {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .topbar {
+        padding: 12px;
+      }
+
+      .split-fields,
+      .range-row {
+        grid-template-columns: 1fr;
+      }
+
+      .results-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><i data-lucide="radar"></i></div>
+        <div>
+          <h1>Job Search Beats</h1>
+          <span>Resume matched job search</span>
+        </div>
+      </div>
+      <div class="searchbar">
+        <div class="input-shell">
+          <i data-lucide="search"></i>
+          <input id="queryInput" type="search" placeholder="Role, skill, company, or keyword" autocomplete="off">
+        </div>
+        <div class="input-shell">
+          <i data-lucide="map-pin"></i>
+          <input id="locationInput" type="text" placeholder="Location" autocomplete="off">
+        </div>
+        <button id="topSearchButton" class="icon-button" title="Search jobs" aria-label="Search jobs">
+          <i data-lucide="arrow-right"></i>
+        </button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="panel" aria-label="Search controls">
+        <section class="panel-section">
+          <div class="upload-title">Resume</div>
+          <div class="upload-zone">
+            <label class="file-label" for="resumeInput">
+              <i data-lucide="upload"></i>
+              <span>Choose file</span>
+            </label>
+            <input id="resumeInput" class="file-input" type="file" accept=".pdf,.doc,.docx,.txt,.rtf,.odt,.md,.json,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/rtf,application/json">
+            <div id="fileMeta" class="file-meta">PDF, DOCX, TXT, RTF, MD, JSON, ODT, DOC</div>
+          </div>
+          <div id="skillList" class="skill-list" aria-label="Detected resume skills"></div>
+        </section>
+
+        <section class="panel-section">
+          <div class="field">
+            <label for="daysRange">Posted in days</label>
+            <div class="range-row">
+              <input id="daysRange" type="range" min="1" max="60" value="14">
+              <div class="input-shell"><input id="daysInput" type="number" min="1" max="365" value="14" aria-label="Posted in days"></div>
+            </div>
+          </div>
+
+          <div class="split-fields">
+            <div class="field">
+              <label for="jobTypeInput">Type</label>
+              <div class="input-shell">
+                <select id="jobTypeInput">
+                  <option value="any">Any</option>
+                  <option value="full-time">Full time</option>
+                  <option value="contract">Contract</option>
+                  <option value="internship">Internship</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="levelInput">Level</label>
+              <div class="input-shell">
+                <select id="levelInput">
+                  <option value="any">Any</option>
+                  <option value="junior">Junior</option>
+                  <option value="mid">Mid</option>
+                  <option value="senior">Senior</option>
+                  <option value="lead">Lead</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <label class="checkbox-row">
+            <input id="remoteOnlyInput" type="checkbox">
+            <span>Remote only</span>
+          </label>
+        </section>
+
+        <section class="panel-section">
+          <div class="panel-title">RapidAPI JSearch</div>
+          <div class="detail-card">
+            <div class="detail-line"><i data-lucide="server"></i><span>All searches use the private backend route <strong>/api/jobs/search</strong>.</span></div>
+            <div class="detail-line"><i data-lucide="key-round"></i><span>The server reads <strong>RAPIDAPI_KEY</strong> from <strong>.env</strong>.</span></div>
+          </div>
+          <button id="searchButton" class="primary-button">
+            <i data-lucide="zap"></i>
+            <span>Find jobs</span>
+          </button>
+          <div id="statusLine" class="status-line" aria-live="polite"></div>
+        </section>
+      </aside>
+
+      <section class="results-panel" aria-label="Job results">
+        <div class="results-head">
+          <div>
+            <h2>Matched Jobs</h2>
+            <div id="resultSubhead" class="status-line">Ready</div>
+          </div>
+          <div class="metrics">
+            <div class="metric"><i data-lucide="briefcase"></i><span><strong id="countMetric">0</strong> jobs</span></div>
+            <div class="metric"><i data-lucide="clock-3"></i><span><strong id="latencyMetric">0.0</strong> ms</span></div>
+            <div class="metric"><i data-lucide="target"></i><span><strong id="topScoreMetric">0</strong>% top</span></div>
+          </div>
+        </div>
+        <div class="sort-row">
+          <div class="input-shell">
+            <i data-lucide="filter"></i>
+            <input id="includeInput" type="text" placeholder="Must include">
+          </div>
+          <div class="input-shell">
+            <select id="sortInput" aria-label="Sort jobs">
+              <option value="score">Best match</option>
+              <option value="date">Newest</option>
+              <option value="salary">Salary</option>
+            </select>
+          </div>
+          <button id="clearButton" class="ghost-button">
+            <i data-lucide="rotate-ccw"></i>
+            <span>Reset</span>
+          </button>
+        </div>
+        <div id="resultsList" class="results-list"></div>
+      </section>
+
+      <aside class="detail-panel" aria-label="API recommendations">
+        <div class="panel-title-row">
+          <h2>RapidAPI Setup</h2>
+          <i data-lucide="plug-zap"></i>
+        </div>
+        <div class="detail-card">
+          <div class="detail-line"><i data-lucide="badge-check"></i><span><strong>Provider:</strong> RapidAPI JSearch only.</span></div>
+          <div class="detail-line"><i data-lucide="badge-check"></i><span><strong>Security:</strong> API key stays on the Node server.</span></div>
+          <div class="detail-line"><i data-lucide="badge-check"></i><span><strong>Search:</strong> role, location, days, job type, remote, and resume skills.</span></div>
+          <div class="detail-line"><i data-lucide="triangle-alert"></i><span><strong>Speed:</strong> live API calls depend on RapidAPI network latency.</span></div>
+        </div>
+        <div class="panel-section">
+          <div class="panel-title">Backend flow</div>
+          <ol class="rank-list">
+            <li><strong>1. Browser</strong><span>Sends search filters and detected resume skills to the local backend.</span></li>
+            <li><strong>2. Node server</strong><span>Calls RapidAPI JSearch with your private key from the environment.</span></li>
+            <li><strong>3. Normalizer</strong><span>Converts JSearch fields into clean cards and local match scores.</span></li>
+          </ol>
+        </div>
+        <div class="panel-section source-note">
+          <div class="panel-title">Local setup</div>
+          <div>Keep <strong>.env</strong> private. If you change the RapidAPI key, restart the Node server so it can reload the environment.</div>
+        </div>
+      </aside>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script type="module">
+    const pdfParser = { module: null };
+
+    async function getPdfParser() {
+      if (pdfParser.module) return pdfParser.module;
+      const imported = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.mjs');
+      imported.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.mjs';
+      pdfParser.module = imported;
+      return imported;
+    }
+
+    const state = {
+      resumeText: '',
+      resumeSkills: [],
+      selectedJobId: null,
+      lastResults: []
+    };
+
+    const skillVocabulary = [
+      'javascript', 'typescript', 'react', 'node', 'python', 'java', 'spring', 'aws', 'azure',
+      'gcp', 'docker', 'kubernetes', 'sql', 'postgres', 'mongodb', 'redis', 'graphql', 'rest',
+      'next.js', 'vue', 'angular', 'html', 'css', 'tailwind', 'machine learning', 'data analysis',
+      'pandas', 'spark', 'airflow', 'terraform', 'ci/cd', 'devops', 'security', 'figma',
+      'product', 'analytics', 'prompt engineering', 'llm', 'langchain', 'prisma', 'fastapi'
+    ];
+
+    const sampleJobs = [
+      {
+        id: 'j1',
+        title: 'Frontend Engineer, Search Experience',
+        company: 'Northstar Labs',
+        location: 'Remote, United States',
+        remote: true,
+        postedDays: 1,
+        type: 'full-time',
+        level: 'mid',
+        salaryMin: 130000,
+        salaryMax: 170000,
+        source: 'JSearch',
+        tags: ['react', 'typescript', 'search', 'analytics'],
+        summary: 'Build fast job discovery surfaces with React, TypeScript, ranking signals, analytics, and accessible UI patterns.',
+        url: 'https://www.google.com/search?q=Frontend+Engineer+Search+Experience+jobs'
+      },
+      {
+        id: 'j2',
+        title: 'Full Stack Developer, AI Recruiting Tools',
+        company: 'SignalHire AI',
+        location: 'New York, NY',
+        remote: false,
+        postedDays: 3,
+        type: 'full-time',
+        level: 'senior',
+        salaryMin: 150000,
+        salaryMax: 210000,
+        source: 'SerpAPI',
+        tags: ['node', 'python', 'react', 'llm', 'postgres'],
+        summary: 'Own resume parsing, candidate matching, job search APIs, and high quality ranking workflows for recruiting automation.',
+        url: 'https://www.google.com/search?q=Full+Stack+Developer+AI+Recruiting+Tools+jobs'
+      },
+      {
+        id: 'j3',
+        title: 'Backend Engineer, Job Data Platform',
+        company: 'Workgrid',
+        location: 'San Francisco, CA',
+        remote: true,
+        postedDays: 6,
+        type: 'full-time',
+        level: 'senior',
+        salaryMin: 165000,
+        salaryMax: 230000,
+        source: 'Adzuna',
+        tags: ['python', 'fastapi', 'postgres', 'redis', 'aws'],
+        summary: 'Design low latency APIs, deduplication, caching, and job ingestion pipelines across multiple external providers.',
+        url: 'https://www.google.com/search?q=Backend+Engineer+Job+Data+Platform+jobs'
+      },
+      {
+        id: 'j4',
+        title: 'Data Engineer, Labor Market Intelligence',
+        company: 'Atlas Metrics',
+        location: 'Austin, TX',
+        remote: true,
+        postedDays: 10,
+        type: 'contract',
+        level: 'mid',
+        salaryMin: 115000,
+        salaryMax: 150000,
+        source: 'Apify',
+        tags: ['python', 'spark', 'airflow', 'sql', 'analytics'],
+        summary: 'Create pipelines that normalize job postings, salaries, skills, company metadata, and freshness signals.',
+        url: 'https://www.google.com/search?q=Data+Engineer+Labor+Market+Intelligence+jobs'
+      },
+      {
+        id: 'j5',
+        title: 'React Developer, Talent Marketplace',
+        company: 'BrightPath',
+        location: 'Remote, India',
+        remote: true,
+        postedDays: 2,
+        type: 'full-time',
+        level: 'junior',
+        salaryMin: 35000,
+        salaryMax: 65000,
+        source: 'Greenhouse',
+        tags: ['react', 'javascript', 'css', 'rest', 'figma'],
+        summary: 'Ship responsive marketplace workflows, saved searches, application tracking, and polished candidate-facing screens.',
+        url: 'https://www.google.com/search?q=React+Developer+Talent+Marketplace+jobs'
+      },
+      {
+        id: 'j6',
+        title: 'Cloud DevOps Engineer',
+        company: 'Nimbus Systems',
+        location: 'Seattle, WA',
+        remote: false,
+        postedDays: 12,
+        type: 'full-time',
+        level: 'lead',
+        salaryMin: 170000,
+        salaryMax: 225000,
+        source: 'Lever',
+        tags: ['aws', 'azure', 'terraform', 'docker', 'kubernetes', 'ci/cd'],
+        summary: 'Lead platform automation, deployment reliability, observability, and secure cloud infrastructure for product teams.',
+        url: 'https://www.google.com/search?q=Cloud+DevOps+Engineer+jobs'
+      },
+      {
+        id: 'j7',
+        title: 'Product Analyst, Search Quality',
+        company: 'Horizon Careers',
+        location: 'Chicago, IL',
+        remote: true,
+        postedDays: 5,
+        type: 'full-time',
+        level: 'mid',
+        salaryMin: 95000,
+        salaryMax: 135000,
+        source: 'JSearch',
+        tags: ['sql', 'analytics', 'product', 'python', 'data analysis'],
+        summary: 'Measure search quality, build dashboards, analyze ranking experiments, and improve job seeker conversion.',
+        url: 'https://www.google.com/search?q=Product+Analyst+Search+Quality+jobs'
+      },
+      {
+        id: 'j8',
+        title: 'AI Application Engineer',
+        company: 'Vertex Works',
+        location: 'Remote, Europe',
+        remote: true,
+        postedDays: 4,
+        type: 'contract',
+        level: 'senior',
+        salaryMin: 120000,
+        salaryMax: 180000,
+        source: 'SerpAPI',
+        tags: ['typescript', 'python', 'llm', 'langchain', 'prompt engineering'],
+        summary: 'Create production AI workflows, retrieval systems, evaluation loops, and integrations with customer data sources.',
+        url: 'https://www.google.com/search?q=AI+Application+Engineer+jobs'
+      }
+    ];
+
+    const elements = {
+      queryInput: document.getElementById('queryInput'),
+      locationInput: document.getElementById('locationInput'),
+      topSearchButton: document.getElementById('topSearchButton'),
+      resumeInput: document.getElementById('resumeInput'),
+      fileMeta: document.getElementById('fileMeta'),
+      skillList: document.getElementById('skillList'),
+      daysRange: document.getElementById('daysRange'),
+      daysInput: document.getElementById('daysInput'),
+      jobTypeInput: document.getElementById('jobTypeInput'),
+      levelInput: document.getElementById('levelInput'),
+      remoteOnlyInput: document.getElementById('remoteOnlyInput'),
+      searchButton: document.getElementById('searchButton'),
+      statusLine: document.getElementById('statusLine'),
+      resultSubhead: document.getElementById('resultSubhead'),
+      countMetric: document.getElementById('countMetric'),
+      latencyMetric: document.getElementById('latencyMetric'),
+      topScoreMetric: document.getElementById('topScoreMetric'),
+      includeInput: document.getElementById('includeInput'),
+      sortInput: document.getElementById('sortInput'),
+      clearButton: document.getElementById('clearButton'),
+      resultsList: document.getElementById('resultsList'),
+      toast: document.getElementById('toast')
+    };
+
+    function debounce(callback, wait = 150) {
+      let timeoutId;
+      return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => callback(...args), wait);
+      };
+    }
+
+    function tokenize(value) {
+      return (value || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9+#./ -]/g, ' ')
+        .split(/\s+/)
+        .map((term) => term.trim())
+        .filter(Boolean);
+    }
+
+    function money(value) {
+      if (!value) return 'Not listed';
+      return new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(value);
+    }
+
+    function showToast(message) {
+      elements.toast.textContent = message;
+      elements.toast.classList.add('show');
+      setTimeout(() => elements.toast.classList.remove('show'), 2600);
+    }
+
+    function setStatus(message) {
+      elements.statusLine.textContent = message;
+    }
+
+    function extractSkills(text) {
+      const haystack = ` ${text.toLowerCase()} `;
+      const found = skillVocabulary.filter((skill) => haystack.includes(` ${skill} `) || haystack.includes(skill));
+      return [...new Set(found)].slice(0, 12);
+    }
+
+    function renderSkills() {
+      elements.skillList.innerHTML = '';
+      const skills = state.resumeSkills.length ? state.resumeSkills : ['No resume skills yet'];
+      skills.forEach((skill) => {
+        const chip = document.createElement('span');
+        chip.className = 'skill-chip';
+        chip.textContent = skill;
+        elements.skillList.appendChild(chip);
+      });
+    }
+
+    async function readTextFile(file) {
+      return file.text();
+    }
+
+    async function readPdfFile(file) {
+      const pdfjsLib = await getPdfParser();
+      const data = new Uint8Array(await file.arrayBuffer());
+      const pdf = await pdfjsLib.getDocument({ data }).promise;
+      const pages = [];
+      for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+        const page = await pdf.getPage(pageNumber);
+        const content = await page.getTextContent();
+        pages.push(content.items.map((item) => item.str).join(' '));
+      }
+      return pages.join('\n');
+    }
+
+    async function readDocxFile(file) {
+      if (!window.mammoth?.extractRawText) {
+        throw new Error('DOCX parser is still loading');
+      }
+      const result = await window.mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
+      return result.value || '';
+    }
+
+    async function parseResumeFile(file) {
+      const extension = file.name.split('.').pop().toLowerCase();
+      if (extension === 'pdf') return readPdfFile(file);
+      if (extension === 'docx') return readDocxFile(file);
+      if (['txt', 'md', 'json', 'rtf'].includes(extension)) return readTextFile(file);
+      return `${file.name} ${file.type || ''}`;
+    }
+
+    function sourceMatches(job, source) {
+      if (source === 'demo') return true;
+      if (source === 'jsearch') return job.source.toLowerCase() === 'jsearch';
+      if (source === 'serpapi') return job.source.toLowerCase() === 'serpapi';
+      if (source === 'adzuna') return job.source.toLowerCase() === 'adzuna';
+      if (source === 'apify') return job.source.toLowerCase() === 'apify';
+      if (source === 'ats') return ['greenhouse', 'lever'].includes(job.source.toLowerCase());
+      return true;
+    }
+
+    function normalizeApiJobs(payload) {
+      const list = Array.isArray(payload) ? payload : payload.jobs || payload.data || payload.results || [];
+      return list.map((job, index) => ({
+        id: job.id || job.job_id || `api-${index}`,
+        title: job.title || job.job_title || 'Untitled role',
+        company: job.company || job.employer_name || job.company_name || 'Unknown company',
+        location: job.location || job.job_city || job.job_country || job.job_location || 'Not listed',
+        remote: Boolean(job.remote || job.job_is_remote),
+        postedDays: Number(job.postedDays || job.posted_days || job.job_posted_at_days_ago || 0),
+        type: (job.type || job.job_employment_type || 'full-time').toLowerCase(),
+        level: (job.level || 'any').toLowerCase(),
+        salaryMin: Number(job.salaryMin || job.salary_min || job.job_min_salary || 0),
+        salaryMax: Number(job.salaryMax || job.salary_max || job.job_max_salary || 0),
+        source: job.source || elements.sourceInput.options[elements.sourceInput.selectedIndex].text,
+        tags: Array.isArray(job.tags) ? job.tags : tokenize(`${job.title || ''} ${job.description || ''}`).slice(0, 8),
+        summary: job.summary || job.description || job.job_description || 'No summary provided.',
+        url: job.url || job.apply_url || job.job_apply_link || job.job_google_link || '#'
+      }));
+    }
+
+    async function fetchExternalJobs() {
+      const response = await fetch('/api/jobs/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: elements.queryInput.value.trim(),
+          location: elements.locationInput.value.trim(),
+          days: Number(elements.daysInput.value),
+          remoteOnly: elements.remoteOnlyInput.checked,
+          jobType: elements.jobTypeInput.value,
+          level: elements.levelInput.value,
+          resumeText: state.resumeText,
+          skills: state.resumeSkills
+        })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.message || `RapidAPI backend returned ${response.status}`);
+      }
+      return normalizeApiJobs(payload);
+    }
+
+    function scoreJob(job, queryTerms, includeTerms) {
+      const searchText = `${job.title} ${job.company} ${job.location} ${job.summary} ${job.tags.join(' ')}`.toLowerCase();
+      let score = 45;
+      queryTerms.forEach((term) => {
+        if (searchText.includes(term)) score += 8;
+      });
+      includeTerms.forEach((term) => {
+        if (searchText.includes(term)) score += 10;
+      });
+      state.resumeSkills.forEach((skill) => {
+        if (searchText.includes(skill.toLowerCase())) score += 5;
+      });
+      if (job.remote) score += 3;
+      if (job.postedDays <= 3) score += 7;
+      if (job.postedDays <= 7) score += 4;
+      return Math.max(1, Math.min(99, score));
+    }
+
+    function applyFilters(jobs) {
+      const queryTerms = tokenize(elements.queryInput.value);
+      const includeTerms = tokenize(elements.includeInput.value);
+      const maxDays = Number(elements.daysInput.value) || 14;
+      const selectedType = elements.jobTypeInput.value;
+      const selectedLevel = elements.levelInput.value;
+      const remoteOnly = elements.remoteOnlyInput.checked;
+
+      let filtered = jobs.filter((job) => {
+        const text = `${job.title} ${job.company} ${job.location} ${job.summary} ${job.tags.join(' ')}`.toLowerCase();
+        const includeMatch = !includeTerms.length || includeTerms.every((term) => text.includes(term));
+        const daysMatch = Number(job.postedDays || 0) <= maxDays;
+        const typeMatch = selectedType === 'any' || job.type === selectedType;
+        const levelMatch = selectedLevel === 'any' || job.level === selectedLevel;
+        const remoteMatch = !remoteOnly || job.remote;
+        return includeMatch && daysMatch && typeMatch && levelMatch && remoteMatch;
+      });
+
+      filtered = filtered.map((job) => ({ ...job, score: scoreJob(job, queryTerms, includeTerms) }));
+
+      const sortMode = elements.sortInput.value;
+      if (sortMode === 'date') {
+        filtered.sort((a, b) => a.postedDays - b.postedDays || b.score - a.score);
+      } else if (sortMode === 'salary') {
+        filtered.sort((a, b) => (b.salaryMax || 0) - (a.salaryMax || 0) || b.score - a.score);
+      } else {
+        filtered.sort((a, b) => b.score - a.score || a.postedDays - b.postedDays);
+      }
+      return filtered;
+    }
+
+    function renderJobs(jobs, latency) {
+      state.lastResults = jobs;
+      elements.resultsList.innerHTML = '';
+      elements.countMetric.textContent = String(jobs.length);
+      elements.latencyMetric.textContent = latency.toFixed(1);
+      elements.topScoreMetric.textContent = String(jobs[0]?.score || 0);
+      elements.resultSubhead.textContent = jobs.length ? `${jobs.length} roles sorted by ${elements.sortInput.options[elements.sortInput.selectedIndex].text.toLowerCase()}` : 'No matches';
+
+      if (!jobs.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.textContent = 'No jobs matched the current filters.';
+        elements.resultsList.appendChild(empty);
+        return;
+      }
+
+      jobs.forEach((job) => {
+        const row = document.createElement('article');
+        row.className = `job-row${state.selectedJobId === job.id ? ' active' : ''}`;
+        row.tabIndex = 0;
+        row.innerHTML = `
+          <div class="job-main">
+            <div class="job-title-row">
+              <div class="job-title">
+                <h3>${escapeHtml(job.title)}</h3>
+                <div class="company">${escapeHtml(job.company)}</div>
+              </div>
+              <div class="score-pill">${job.score}%</div>
+            </div>
+            <p class="job-summary">${escapeHtml(job.summary)}</p>
+            <div class="job-meta">
+              <span class="meta-item"><i data-lucide="map-pin"></i>${escapeHtml(job.location)}</span>
+              <span class="meta-item"><i data-lucide="calendar-days"></i>${job.postedDays}d</span>
+              <span class="meta-item"><i data-lucide="wallet"></i>${money(job.salaryMin)}-${money(job.salaryMax)}</span>
+              <span class="meta-item"><i data-lucide="database"></i>${escapeHtml(job.source)}</span>
+              ${job.remote ? '<span class="meta-item"><i data-lucide="wifi"></i>Remote</span>' : ''}
+            </div>
+            <div class="tag-list">${job.tags.slice(0, 6).map((tag) => `<span class="tag-chip ${tagTone(tag)}">${escapeHtml(tag)}</span>`).join('')}</div>
+          </div>
+          <div class="job-actions">
+            <a href="${escapeAttribute(job.url)}" target="_blank" rel="noreferrer"><i data-lucide="external-link"></i><span>Apply</span></a>
+          </div>
+        `;
+        row.addEventListener('click', () => {
+          state.selectedJobId = job.id;
+          renderJobs(state.lastResults, Number(elements.latencyMetric.textContent));
+        });
+        elements.resultsList.appendChild(row);
+      });
+
+      lucide.createIcons();
+    }
+
+    function tagTone(tag) {
+      if (['aws', 'azure', 'gcp', 'docker', 'kubernetes', 'terraform'].includes(tag)) return 'blue';
+      if (['llm', 'langchain', 'prompt engineering', 'machine learning'].includes(tag)) return 'amber';
+      if (['security'].includes(tag)) return 'red';
+      return '';
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function escapeAttribute(value) {
+      const stringValue = String(value || '#');
+      if (!/^https?:\/\//i.test(stringValue) && stringValue !== '#') return '#';
+      return escapeHtml(stringValue);
+    }
+
+    async function runSearch() {
+      const started = performance.now();
+      setStatus('Searching');
+      try {
+        const jobs = await fetchExternalJobs();
+        const results = applyFilters(jobs);
+        const latency = performance.now() - started;
+        renderJobs(results, latency);
+        setStatus('RapidAPI JSearch results loaded');
+      } catch (error) {
+        const latency = performance.now() - started;
+        renderJobs([], latency);
+        elements.resultSubhead.textContent = 'RapidAPI setup needed';
+        setStatus(error.message || 'RapidAPI search failed');
+        showToast(error.message || 'RapidAPI search failed');
+      }
+    }
+
+    async function handleResumeChange(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      elements.fileMeta.textContent = `${file.name} (${Math.ceil(file.size / 1024)} KB)`;
+      setStatus('Reading resume');
+      try {
+        state.resumeText = await parseResumeFile(file);
+        state.resumeSkills = extractSkills(state.resumeText);
+        if (!elements.queryInput.value.trim() && state.resumeSkills.length) {
+          elements.queryInput.value = state.resumeSkills.slice(0, 4).join(' ');
+        }
+        renderSkills();
+        setStatus(state.resumeSkills.length ? `${state.resumeSkills.length} skills detected` : 'Resume loaded');
+        runSearch();
+      } catch (error) {
+        state.resumeText = file.name;
+        state.resumeSkills = extractSkills(file.name);
+        renderSkills();
+        setStatus('Resume parser needs backend support for this file');
+        showToast(error.message || 'Could not parse this resume');
+      }
+    }
+
+    function resetFilters() {
+      elements.queryInput.value = '';
+      elements.locationInput.value = '';
+      elements.includeInput.value = '';
+      elements.daysRange.value = '14';
+      elements.daysInput.value = '14';
+      elements.jobTypeInput.value = 'any';
+      elements.levelInput.value = 'any';
+      elements.remoteOnlyInput.checked = false;
+      state.selectedJobId = null;
+      runSearch();
+    }
+
+    function syncDaysFromRange() {
+      elements.daysInput.value = elements.daysRange.value;
+      runSearch();
+    }
+
+    function syncDaysFromInput() {
+      const value = Math.max(1, Math.min(365, Number(elements.daysInput.value) || 14));
+      elements.daysInput.value = String(value);
+      elements.daysRange.value = String(Math.min(60, value));
+      runSearch();
+    }
+
+    const debouncedSearch = debounce(runSearch, 180);
+
+    elements.resumeInput.addEventListener('change', handleResumeChange);
+    elements.searchButton.addEventListener('click', runSearch);
+    elements.topSearchButton.addEventListener('click', runSearch);
+    elements.clearButton.addEventListener('click', resetFilters);
+    elements.daysRange.addEventListener('input', syncDaysFromRange);
+    elements.daysInput.addEventListener('change', syncDaysFromInput);
+    elements.queryInput.addEventListener('input', debouncedSearch);
+    elements.locationInput.addEventListener('input', debouncedSearch);
+    elements.includeInput.addEventListener('input', debouncedSearch);
+    elements.sortInput.addEventListener('change', runSearch);
+    elements.jobTypeInput.addEventListener('change', runSearch);
+    elements.levelInput.addEventListener('change', runSearch);
+    elements.remoteOnlyInput.addEventListener('change', runSearch);
+
+    renderSkills();
+    runSearch();
+    lucide.createIcons();
+  </script>
+</body>
+</html>
